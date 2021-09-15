@@ -11,7 +11,10 @@ COPY package*.json ./
 RUN npm install --only=production
 
 # copies the source code
-COPY . ./src
+COPY ./src ./src
+
+# copies the video
+COPY ./videos ./videos
 
 # starts the microservice with npm start
 CMD npm start
