@@ -1,6 +1,19 @@
 version: '3'
 services:
 
+  azure-storage:
+    image: azure-storage
+    build:
+      context: ./azure_storage
+      dockerfile: Dockerfile
+    container_name: video-storage
+    ports:
+      - "4000:80"
+    environment:
+      - PORT=80
+      - STORAGE_ACCOUNT_NAME=pleasegetit
+      - STORAGE_ACCESS_KEY=jqF/6iOiKr/R++uu5OKa1SvnWfpF9rycWKlyoRvJRC2338fBjJ8lEsI4jMcWX3rzN3X31yF1nv5N0KQCVRX65w==
+    restart: "no"
   video_streaming:
     image: video_streaming 
     build:
@@ -8,7 +21,9 @@ services:
       dockerfile: Dockerfile
     container_name: video_streaming
     ports:
-      - "4000:80"
+      - "4001:80"
     environment: 
       - PORT=80
+      - VIDEO_STORAGE_HOST=video-storage
+      - VIDEO_STORAGE_PORT=80
     restart: "no"
