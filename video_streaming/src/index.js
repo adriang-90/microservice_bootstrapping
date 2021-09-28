@@ -1,34 +1,33 @@
 const express = require("express");
-const fs = require("fs");
-const path = require("path");
+
+// Load the built-in http lib
+const http = require("http");
 
 const app = express();
-const port = 3000;
 
-//
-// Registers a HTTP GET route for video streaming.
-//
+const PORT = process.env.PORT;
+
+// configure the connection to the microservice
+const VIDEO_STORAGE_HOST = process.env.VIDEO_STORAGE_HOST;
+const VIDEO_STORAGE_PORT = parseInt(process.env.VIDEO_STORAGE_PORT);
+
 app.get("/video", (req, res) => {
-
-    const videoPath = path.join("./videos", "SampleVideo_720x480_1mb.mp4");
-    fs.stat(videoPath, (err, stats) => {
-        if (err) {
-            console.error("An error occurred ");
-            res.sendStatus(500);
-            return;
+    const forwardRequest = http.request(
+        {
+            host: VIDEO_STORAGE_HOST,
+            port: VIDEO_STORAGE_PORT,
+            path: '/video?path=SampleVideo_720x480_1mb.mp4',
+            method: 'GET',
+            headers: req.headers
+        },
+        forwardResponse => {
+            res.writeHeader(forwardResponse.statusCode,forwardResponse.headers);
+            forwardResponse.pipe(res);
         }
-
-        res.writeHead(200, {
-            "Content-Length": stats.size,
-            "Content-Type": "video/mp4",
-        });
-        fs.createReadStream(videoPath).pipe(res);
-    });
+    );
+    req.pipe(forwardRequest);
 });
 
-//
-// Starts the HTTP server.
-//
-app.listen(port, () => {
-    console.log(`Microservice online`);
+app.listen(PORT, () => {
+    console.log('Microservice online');
 });
